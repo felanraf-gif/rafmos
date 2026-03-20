@@ -9,8 +9,30 @@ from gitmind.api.gitlab_client import GitLabClient
 from gitmind.prompts import get_review_prompt
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
+import re
 
 logging.basicConfig(level=logging.INFO)
+
+
+def sanitize_secrets(text: str) -> str:
+    patterns = [
+        (r'(api[_-]?key["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-]{8,})', r'\1[HIDDEN]'),
+        (r'(token["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-\.]{8,})', r'\1[HIDDEN]'),
+        (r'(password["\']?\s*[:=]\s*["\']?)([^\s"\']{4,})', r'\1[HIDDEN]'),
+        (r'(secret["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-]{8,})', r'\1[HIDDEN]'),
+        (r'(bearer\s+)([a-zA-Z0-9_\-\.]{10,})', r'\1[HIDDEN]'),
+        (r'(sk\-)[a-zA-Z0-9]{20,}', r'\1[HIDDEN]'),
+        (r'(gsk_)[a-zA-Z0-9]{20,}', r'\1[HIDDEN]'),
+        (r'(ghp_)[a-zA-Z0-9]{20,}', r'\1[HIDDEN]'),
+        (r'(glpat\-)[a-zA-Z0-9_\-\.]{10,}', r'\1[HIDDEN]'),
+        (r'"([a-zA-Z_]+)"\s*:\s*"([a-zA-Z0-9_\-]{20,})"', r'"\1": "[HIDDEN]"'),
+        (r"'([a-zA-Z_]+)'\s*[:=]\s*'([a-zA-Z0-9_\-]{20,})'", r'"\1": "[HIDDEN]"'),
+    ]
+    
+    for pattern, replacement in patterns:
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+    
+    return text
 logger = logging.getLogger(__name__)
 
 
@@ -75,7 +97,8 @@ class WebhookHandler:
         )
         
         if response.get("success"):
-            comment = f"## AI Code Review\n\n{response['content']}"
+            sanitized_content = sanitize_secrets(response['content'])
+            comment = f"## AI Code Review\n\n{sanitized_content}"
             
             try:
                 note_result = self.gitlab.create_mr_note(project_id, mr_iid, comment)
@@ -192,7 +215,8 @@ Please provide helpful assistance with this issue. Ask clarifying questions if n
         response = self.llm.generate(prompt_with_context)
         
         if response.get("success"):
-            self.gitlab.create_mr_note(project_id, mr_iid, f"## AI Response\n\n{response['content']}")
+            sanitized = sanitize_secrets(response['content'])
+            self.gitlab.create_mr_note(project_id, mr_iid, f"## AI Response\n\n{sanitized}")
         
         return {"success": True}
     

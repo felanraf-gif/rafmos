@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify, g
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from gitmind.api.gitlab_client import GitLabClient
-from gitmind.webhooks.handler import WebhookHandler
+from gitmind.webhooks.handler import WebhookHandler, sanitize_secrets
 from gitmind.config import GITLAB_CONFIG, GROQ_CONFIG
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
@@ -184,8 +184,9 @@ def api_chat():
     
     try:
         response = llm_client.generate(message)
+        sanitized = sanitize_secrets(response.get("content", ""))
         return jsonify({
-            "response": response.get("content", ""),
+            "response": sanitized,
             "success": response.get("success", False)
         })
     except Exception as e:
