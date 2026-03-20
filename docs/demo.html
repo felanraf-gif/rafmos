@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitMind Demo - AI Code Review</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 40px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+        
+        .demo-box {
+            background: #16162a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        .demo-header {
+            background: #0f0f1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+        
+        .demo-content {
+            padding: 20px;
+        }
+        
+        .mr-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .review-comment {
+            background: #1e1e3f;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #6366f1;
+        }
+        
+        .review-header {
+            color: #6366f1;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .issue {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+        }
+        
+        .severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .severity-critical { background: #dc2626; }
+        .severity-high { background: #ea580c; }
+        .severity-medium { background: #ca8a04; }
+        
+        .issue-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .issue-desc {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        
+        .issue-fix {
+            background: #0f172a;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #27c93f;
+        }
+        
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding: 20px;
+            background: #16162a;
+            border-radius: 12px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #6366f1;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GitMind Demo - AI Code Review</h1>
+        
+        <div class="demo-box">
+            <div class="demo-header">
+                <div class="dot dot-red"></div>
+                <div class="dot dot-yellow"></div>
+                <div class="dot dot-green"></div>
+            </div>
+            <div class="demo-content">
+                <div class="mr-title">🔀 MR !7: Add database module</div>
+                
+                <div class="review-comment">
+                    <div class="review-header">## AI Code Review</div>
+                    
+                    <div class="issue">
+                        <span class="severity severity-critical">CRITICAL</span>
+                        <div class="issue-title">SQL Injection Vulnerability</div>
+                        <div class="issue-desc">
+                            <strong>File:</strong> database.py:20<br>
+                            The query uses string formatting which is vulnerable to SQL injection.
+                        </div>
+                        <div class="issue-fix">
+                            query = "SELECT * FROM users WHERE id = ?"<br>
+                            cursor.execute(query, (user_id,))
+                        </div>
+                    </div>
+                    
+                    <div class="issue">
+                        <span class="severity severity-critical">CRITICAL</span>
+                        <div class="issue-title">Password Stored in Plaintext</div>
+                        <div class="issue-desc">
+                            <strong>File:</strong> database.py:10<br>
+                            Password is stored directly without hashing. Use bcrypt or argon2.
+                        </div>
+                        <div class="issue-fix">
+                            hashed = bcrypt.hashpw(password, bcrypt.gensalt())<br>
+                            self.users[username] = hashed
+                        </div>
+                    </div>
+                    
+                    <div class="issue">
+                        <span class="severity severity-high">HIGH</span>
+                        <div class="issue-title">Missing Input Validation</div>
+                        <div class="issue-desc">
+                            <strong>File:</strong> database.py:20<br>
+                            No validation of user input parameters.
+                        </div>
+                        <div class="issue-fix">
+                            if not user_id or not isinstance(user_id, int):<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;raise ValueError("Invalid user_id")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value">3</div>
+                <div class="stat-label">Issues Found</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Critical</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">15s</div>
+                <div class="stat-label">Review Time</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
