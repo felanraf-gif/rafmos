@@ -9,6 +9,7 @@ from gitmind.api.gitlab_client import GitLabClient
 from gitmind.prompts import get_review_prompt
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
+from gitmind.cache import mr_cache, llm_cache, cache_key
 import re
 
 logging.basicConfig(level=logging.INFO)
@@ -89,9 +90,17 @@ class WebhookHandler:
         return {"message": f"Action {action} not processed"}
     
     def process_mr_review(self, project_id: str, mr_iid: int) -> Dict:
-        mr_changes = self.gitlab.get_mr_changes(project_id, mr_iid)
-        mr = mr_changes.get("mr", {})
-        changes = mr_changes.get("changes", [])
+        cache_k = cache_key(project_id, mr_iid)
+        
+        cached = mr_cache.get(cache_k)
+        if cached:
+            logger.info(f"Using cached MR data for !{mr_iid}")
+            mr, changes = cached['mr'], cached['changes']
+        else:
+            mr_changes = self.gitlab.get_mr_changes(project_id, mr_iid)
+            mr = mr_changes.get("mr", {})
+            changes = mr_changes.get("changes", [])
+            mr_cache.set(cache_k, {'mr': mr, 'changes': changes})
         
         review_content = self._prepare_review_content(mr, changes)
         

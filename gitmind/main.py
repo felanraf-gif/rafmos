@@ -297,6 +297,15 @@ def api_learning_summary():
     return jsonify({"summary": summary})
 
 
+@app.route("/api/cache/stats", methods=["GET"])
+def api_cache_stats():
+    from gitmind.cache import mr_cache, llm_cache
+    return jsonify({
+        "mr_cache": mr_cache.get_stats(),
+        "llm_cache": llm_cache.get_stats()
+    })
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     debug = os.environ.get("DEBUG", "false").lower() == "true"
