@@ -13,6 +13,13 @@ from gitmind.webhooks.handler import WebhookHandler, sanitize_secrets
 from gitmind.config import GITLAB_CONFIG, GROQ_CONFIG
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
+from gitmind.logging_config import setup_logging, get_logger
+from gitmind.monitoring import init_sentry
+
+setup_logging()
+logger = get_logger(__name__)
+
+init_sentry()
 
 app = Flask(__name__)
 
