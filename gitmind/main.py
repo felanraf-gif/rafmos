@@ -95,7 +95,15 @@ def webhook():
     
     payload = request.json
     
+    event_type_map = {
+        "merge_request_hook": "merge_request",
+        "issue_hook": "issue",
+        "note_hook": "note",
+        "push_hook": "push",
+    }
+    
     event_key = event_type.lower().replace(" ", "_")
+    event_key = event_type_map.get(event_key, event_key.replace("_hook", "").replace("_hook", ""))
     
     result = webhook_handler.handle(event_key, payload)
     
