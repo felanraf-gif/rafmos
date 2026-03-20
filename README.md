@@ -4,12 +4,23 @@
 
 GitMind to AI asystent do automatycznej recenzji kodu dla GitLab Merge Requests.
 
+## Live Demo
+
+**API:** https://felanraf-gif-project.onrender.com
+**Landing:** https://felanraf-gif.github.io/rafmos/
+
 ## Features
 
-- **Automatic Code Review** - AI analizuje zmiany i dodaje komentarze
+- **Automatic Code Review** - AI analizuje zmiany i dodaje komentarze z emoji i statystykami
+- **Security Scanning** - Wykrywa hardcoded secrets, API keys, tokens (automatycznie ukrywane)
 - **Feedback Loop** - Agent uczy się z akceptacji/odrzuceń
 - **Multi-LLM Support** - Groq, LMStudio, OpenAI
-- **Security Focus** - Wykrywa problemy bezpieczeństwa
+- **Rate Limiting** - Ochrona przed abuse
+- **Input Validation** - Walidacja wszystkich danych wejściowych
+- **Retry Logic** - Automatyczne powtórzenia przy błędach GitLab API
+- **Caching** - Cache dla MR data
+- **Async Processing** - Background processing
+- **Uptime Monitoring** - Health checks i status
 
 ## Quick Start
 
@@ -27,36 +38,62 @@ python gitmind/main.py
 
 ## API Endpoints
 
+### Status
+```
+GET  /                   - Root info
+GET  /health            - Health check
+GET  /api/status         - Service status + uptime
+GET  /api/uptime         - Uptime metrics
+```
+
 ### Webhook
 ```
-POST /webhook - GitLab webhook endpoint
+POST /webhook - GitLab webhook endpoint (automatyczna recenzja)
 ```
 
 ### Code Review
 ```
-POST /api/review - Recenzja MR
-Body: {"project_id": 123, "mr_iid": 1}
+POST /api/review         - Recenzja MR (rate limited: 10/min)
+POST /api/chat          - Chat z AI (rate limited: 5/min)
 ```
 
 ### Feedback
 ```
-GET  /api/feedback/stats     - Statystyki
-GET  /api/feedback/recent    - Ostatnie recenzje  
-POST /api/feedback/helpful   - Oznacz jako pomocne
-POST /api/feedback/not-helpful - Oznacz jako niepomocne
-GET  /api/feedback/tips      - Wskazówki dla agenta
+GET  /api/feedback/stats         - Statystyki
+GET  /api/feedback/recent        - Ostatnie recenzje
+POST /api/feedback/helpful       - Oznacz jako pomocne
+POST /api/feedback/not-helpful   - Oznacz jako niepomocne
+GET  /api/feedback/tips          - Wskazówki dla agenta
 ```
+
+### Infrastructure
+```
+GET  /api/cache/stats           - Cache stats
+GET  /api/tasks/status/<id>    - Task status
+```
+
+## Security
+
+- Input validation (wszystkie endpointy)
+- Secret sanitization (API keys nigdy nie są ujawniane)
+- Rate limiting (per IP)
+- HMAC token verification (webhook)
+- Constant-time comparison (tokeny)
 
 ## System Architecture
 
 ```
 GitLab Webhook
      ↓
+InputValidation
+     ↓
 WebhookHandler
      ↓
-GitLab API (pobierz MR)
+GitLab API (pobierz MR) ← Retry Logic
      ↓
 LLM (Groq) - generuj recenzję
+     ↓
+SecretSanitization
      ↓
 GitLab API (dodaj komentarz)
      ↓
@@ -65,86 +102,62 @@ FeedbackStorage (zapisz)
 LearningEngine (analizuj)
 ```
 
-## Feedback System
+## Monitoring
 
-### Status Recenzji
-- `pending` - Nowa recenzja
-- `accepted` - Developer uznał za pomocną
-- `rejected` - Developer uznał za niepomocną  
-- `outdated` - MR został zmergowany
+### Health Check
+```bash
+curl https://felanraf-gif-project.onrender.com/health
+```
 
-### Typy Feedback
-- `security` - Problemy bezpieczeństwa
-- `bug` - Błędy logiczne
-- `quality` - Jakość kodu
-- `performance` - Wydajność
+### Uptime Metrics
+```bash
+curl https://felanraf-gif-project.onrender.com/api/uptime
+```
 
-### Metryki
-- `accuracy` - Dokładność = accepted / (accepted + rejected)
-- `by_type` - Statystyki per typ problemu
+### Feedback Stats
+```bash
+curl https://felanraf-gif-project.onrender.com/api/feedback/stats
+```
 
 ## Configuration
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| GITLAB_TOKEN | GitLab Personal Access Token | - |
-| GITLAB_WEBHOOK_SECRET | Webhook secret | - |
-| GROQ_API_KEY | Groq API key | - |
-| GROQ_MODEL | Model (llama-3.3-70b-versatile) | - |
-| PORT | Server port | 8000 |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| GITLAB_TOKEN | GitLab Personal Access Token | Yes |
+| GITLAB_WEBHOOK_SECRET | Webhook secret | No |
+| GROQ_API_KEY | Groq API key | Yes |
+| GROQ_MODEL | Model (llama-3.3-70b-versatile) | No |
+| SENTRY_DSN | Sentry DSN for error tracking | No |
+| PORT | Server port | No (8000) |
 
-### LLM Providers
+## Testing
 
-**Groq (default)**
-```python
-GROQ_CONFIG = {
-    "api_key": "gsk_...",
-    "model": "llama-3.3-70b-versatile",
-    "temperature": 0.7,
-}
-```
+```bash
+# Run all tests
+pytest tests/ -v
 
-**LMStudio (local)**
-```python
-LMSTUDIO_CONFIG = {
-    "base_url": "http://localhost:1234/v1",
-    "model": "qwen2.5-7b-instruct.gguf",
-}
+# Run specific test file
+pytest tests/test_validators.py -v
+pytest tests/test_sanitization.py -v
+pytest tests/test_integration.py -v
 ```
 
 ## Deployment
 
-### Local
-```bash
-python gitmind/main.py
-```
-
-### Production
-```bash
-gunicorn -w 4 -b 0.0.0.0:8000 gitmind.main:app
-```
+### Render (Recommended)
+1. Connect GitHub repo
+2. Set environment variables
+3. Deploy
 
 ### Docker
-```dockerfile
-FROM python:3.11
-COPY . /app
-WORKDIR /app
-RUN pip install -r requirements.txt
-CMD ["python", "gitmind/main.py"]
-```
-
-## Monitoring
-
-### Health Check
 ```bash
-curl http://localhost:8000/health
-```
-
-### Feedback Stats
-```bash
-curl http://localhost:8000/api/feedback/stats
+docker build -t gitmind .
+docker run -p 8000:8000 \
+  -e GITLAB_TOKEN=xxx \
+  -e GROQ_API_KEY=xxx \
+  gitmind
 ```
 
 ## Roadmap
@@ -153,10 +166,16 @@ curl http://localhost:8000/api/feedback/stats
 - [x] System feedback  
 - [x] Groq API integration
 - [x] Automatyczne outdated przy merge
+- [x] Security scanning
+- [x] Rate limiting
+- [x] Input validation
+- [x] Retry logic
+- [x] Caching
+- [x] Uptime monitoring
+- [x] 66+ tests passing
 - [ ] Dashboard z wykresami
-- [ ] Więcej LLM providerów (OpenAI, Anthropic)
-- [ ] Security scanning
-- [ ] Performance analysis
+- [ ] SaaS / Freemium model
+- [ ] GitLab Marketplace app
 
 ## License
 
