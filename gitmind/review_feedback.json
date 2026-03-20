@@ -405,5 +405,27 @@
     "feedback_type": "quality",
     "ai_confidence": 0.7,
     "was_helpful": null
+  },
+  {
+    "mr_iid": 42,
+    "project_id": 123,
+    "comment_id": 123,
+    "content": "Good code, no issues found.",
+    "timestamp": "2026-03-20T18:54:09.772292",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 1,
+    "project_id": 123,
+    "comment_id": 1,
+    "content": "Found API key sk-1234567890abcdefghijklmn in the code!",
+    "timestamp": "2026-03-20T18:54:09.811464",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
   }
 ]

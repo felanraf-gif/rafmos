@@ -337,6 +337,26 @@ def api_task_status(task_id):
     })
 
 
+@app.route("/api/uptime", methods=["GET"])
+def api_uptime():
+    hours = request.args.get("hours", 1, type=int)
+    from gitmind.uptime import uptime_monitor
+    return jsonify(uptime_monitor.get_metrics(hours=min(hours, 24)))
+
+
+@app.route("/api/status", methods=["GET"])
+def api_status():
+    uptime_status = uptime_monitor.get_status(hours=24)
+    return jsonify({
+        "service": "GitMind",
+        "version": "0.2.0",
+        "uptime_hours": round(time.time() - start_time, 0),
+        "status": uptime_status.get("status", "healthy"),
+        "uptime_percentage": uptime_status.get("uptime_percentage", 100),
+        "docs": "https://github.com/felanraf-gif/rafmos"
+    })
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     debug = os.environ.get("DEBUG", "false").lower() == "true"
