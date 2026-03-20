@@ -15,6 +15,9 @@ logging.basicConfig(level=logging.INFO)
 
 
 def sanitize_secrets(text: str) -> str:
+    if text is None:
+        return None
+    
     patterns = [
         (r'(api[_-]?key["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-]{8,})', r'\1[HIDDEN]'),
         (r'(token["\']?\s*[:=]\s*["\']?)([a-zA-Z0-9_\-\.]{8,})', r'\1[HIDDEN]'),
@@ -27,6 +30,7 @@ def sanitize_secrets(text: str) -> str:
         (r'(glpat\-)[a-zA-Z0-9_\-\.]{10,}', r'\1[HIDDEN]'),
         (r'"([a-zA-Z_]+)"\s*:\s*"([a-zA-Z0-9_\-]{20,})"', r'"\1": "[HIDDEN]"'),
         (r"'([a-zA-Z_]+)'\s*[:=]\s*'([a-zA-Z0-9_\-]{20,})'", r'"\1": "[HIDDEN]"'),
+        (r'(eyJ[a-zA-Z0-9_\-]{20,})', r'[JWT HIDDEN]'),
     ]
     
     for pattern, replacement in patterns:
