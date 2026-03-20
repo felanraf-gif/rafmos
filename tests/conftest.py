@@ -12,12 +12,9 @@ os.environ['GITLAB_TOKEN'] = 'test-token'
 
 @pytest.fixture
 def app():
-    with patch('gitmind.main.GitLabClient'), \
-         patch('gitmind.main.LLMClient'), \
-         patch('gitmind.main.WebhookHandler'):
-        from gitmind.main import app
-        app.config['TESTING'] = True
-        yield app
+    from gitmind.main import app as flask_app
+    flask_app.config['TESTING'] = True
+    yield flask_app
 
 
 @pytest.fixture

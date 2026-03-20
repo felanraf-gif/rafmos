@@ -306,6 +306,16 @@ def api_cache_stats():
     })
 
 
+@app.route("/api/tasks/status/<task_id>", methods=["GET"])
+def api_task_status(task_id):
+    from gitmind.async_processor import async_processor
+    return jsonify({
+        "task_id": task_id,
+        "status": async_processor.get_status(task_id),
+        "pending_count": async_processor.get_pending_count()
+    })
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     debug = os.environ.get("DEBUG", "false").lower() == "true"

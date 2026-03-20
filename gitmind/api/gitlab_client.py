@@ -1,6 +1,37 @@
 import requests
 from typing import Dict, List, Optional, Any
 import base64
+import time
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def with_retry(max_retries: int = 3, backoff: float = 1.0, retry_on: tuple = (503, 502, 500)):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except requests.exceptions.HTTPError as e:
+                    if e.response is not None and e.response.status_code in retry_on:
+                        if attempt < max_retries - 1:
+                            wait_time = backoff * (2 ** attempt)
+                            logger.warning(f"Retry {attempt + 1}/{max_retries} after {wait_time}s")
+                            time.sleep(wait_time)
+                        else:
+                            raise
+                    else:
+                        raise
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                    if attempt < max_retries - 1:
+                        wait_time = backoff * (2 ** attempt)
+                        logger.warning(f"Connection error, retry {attempt + 1}/{max_retries}")
+                        time.sleep(wait_time)
+                    else:
+                        raise
+        return wrapper
+    return decorator
 
 
 class GitLabClient:
@@ -9,6 +40,7 @@ class GitLabClient:
         self.gitlab_url = gitlab_url
         self.api_url = f"{gitlab_url}/api/v4"
         self.session = requests.Session()
+        self.session.headers.update({"User-Agent": "GitMind/1.0"})
         if token:
             self.session.headers.update({"PRIVATE-TOKEN": token})
     
@@ -16,6 +48,7 @@ class GitLabClient:
         self.token = token
         self.session.headers.update({"PRIVATE-TOKEN": token})
     
+    @with_retry(max_retries=3, backoff=1.0)
     def _request(self, method: str, endpoint: str, **kwargs) -> Dict:
         url = f"{self.api_url}{endpoint}"
         response = self.session.request(method, url, **kwargs)

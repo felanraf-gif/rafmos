@@ -295,5 +295,93 @@
     "feedback_type": "security",
     "ai_confidence": 0.7,
     "was_helpful": null
+  },
+  {
+    "mr_iid": 42,
+    "project_id": 123,
+    "comment_id": 123,
+    "content": "Good code, no issues found.",
+    "timestamp": "2026-03-20T17:29:02.352810",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 1,
+    "project_id": 123,
+    "comment_id": 1,
+    "content": "Found API key sk-1234567890abcdefghijklmn in the code!",
+    "timestamp": "2026-03-20T17:29:02.478901",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 42,
+    "project_id": 123,
+    "comment_id": 123,
+    "content": "Good code, no issues found.",
+    "timestamp": "2026-03-20T17:29:23.563561",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 1,
+    "project_id": 123,
+    "comment_id": 1,
+    "content": "Found API key sk-1234567890abcdefghijklmn in the code!",
+    "timestamp": "2026-03-20T17:29:23.589001",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 42,
+    "project_id": 123,
+    "comment_id": 123,
+    "content": "Good code, no issues found.",
+    "timestamp": "2026-03-20T17:32:03.244200",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 1,
+    "project_id": 123,
+    "comment_id": 1,
+    "content": "Found API key sk-1234567890abcdefghijklmn in the code!",
+    "timestamp": "2026-03-20T17:32:03.264755",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 42,
+    "project_id": 123,
+    "comment_id": 123,
+    "content": "Good code, no issues found.",
+    "timestamp": "2026-03-20T17:32:35.460961",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
+  },
+  {
+    "mr_iid": 1,
+    "project_id": 123,
+    "comment_id": 1,
+    "content": "Found API key sk-1234567890abcdefghijklmn in the code!",
+    "timestamp": "2026-03-20T17:32:35.473630",
+    "status": "pending",
+    "feedback_type": "quality",
+    "ai_confidence": 0.7,
+    "was_helpful": null
   }
 ]

@@ -10,6 +10,7 @@ from gitmind.prompts import get_review_prompt
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
 from gitmind.cache import mr_cache, llm_cache, cache_key
+from gitmind.formatters import format_review_comment, extract_stats_from_content
 import re
 
 logging.basicConfig(level=logging.INFO)
@@ -111,7 +112,9 @@ class WebhookHandler:
         
         if response.get("success"):
             sanitized_content = sanitize_secrets(response['content'])
-            comment = f"## AI Code Review\n\n{sanitized_content}"
+            stats = extract_stats_from_content(sanitized_content)
+            formatted_content = format_review_comment(sanitized_content, stats)
+            comment = f"## 🧠 AI Code Review\n\n{formatted_content}"
             
             try:
                 note_result = self.gitlab.create_mr_note(project_id, mr_iid, comment)
