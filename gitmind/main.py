@@ -14,7 +14,13 @@ from gitmind.config import GITLAB_CONFIG, GROQ_CONFIG
 from gitmind.feedback import get_feedback_storage
 from gitmind.learning import get_learning_engine
 from gitmind.logging_config import setup_logging, get_logger
-from gitmind.monitoring import init_sentry
+from gitmind.monitoring import init_sentry, capture_exception
+from gitmind.validators import (
+    validate_mr_payload,
+    validate_review_request,
+    validate_chat_request,
+    InputValidator
+)
 
 setup_logging()
 logger = get_logger(__name__)
@@ -93,28 +99,45 @@ def health():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    event_type = request.headers.get("X-Gitlab-Event", "")
-    
-    if secret_token:
-        token = request.headers.get("X-Gitlab-Token", "")
-        if token != secret_token:
-            return jsonify({"error": "Unauthorized"}), 401
-    
-    payload = request.json
-    
-    event_type_map = {
-        "merge_request_hook": "merge_request",
-        "issue_hook": "issue",
-        "note_hook": "note",
-        "push_hook": "push",
-    }
-    
-    event_key = event_type.lower().replace(" ", "_")
-    event_key = event_type_map.get(event_key, event_key.replace("_hook", "").replace("_hook", ""))
-    
-    result = webhook_handler.handle(event_key, payload)
-    
-    return jsonify(result)
+    try:
+        event_type = request.headers.get("X-Gitlab-Event", "")
+        
+        if secret_token:
+            token = request.headers.get("X-Gitlab-Token", "")
+            if token != secret_token:
+                return jsonify({"error": "Unauthorized"}), 401
+        
+        try:
+            payload = request.get_json(force=True, silent=True)
+            if payload:
+                payload = InputValidator.sanitize_dict(payload)
+        except Exception as e:
+            logger.error(f"Invalid JSON payload: {e}")
+            return jsonify({"error": "Invalid JSON payload"}), 400
+        
+        if payload and 'object_attributes' in payload:
+            valid, error = validate_mr_payload(payload)
+            if not valid:
+                logger.warning(f"Invalid MR payload: {error}")
+                return jsonify({"error": error}), 400
+        
+        event_type_map = {
+            "merge_request_hook": "merge_request",
+            "issue_hook": "issue",
+            "note_hook": "note",
+            "push_hook": "push",
+        }
+        
+        event_key = event_type.lower().replace(" ", "_")
+        event_key = event_type_map.get(event_key, event_key.replace("_hook", "").replace("_hook", ""))
+        
+        result = webhook_handler.handle(event_key, payload)
+        
+        return jsonify(result)
+    except Exception as e:
+        capture_exception()
+        logger.error(f"Webhook error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/api/review", methods=["POST"])
@@ -124,25 +147,23 @@ def api_review():
         data = request.get_json(force=True, silent=True)
         if not data:
             return jsonify({"error": "Invalid JSON body"}), 400
+        data = InputValidator.sanitize_dict(data)
     except Exception:
         return jsonify({"error": "Invalid request format"}), 400
     
+    valid, error = validate_review_request(data)
+    if not valid:
+        return jsonify({"error": error}), 400
+    
     project_id = data.get("project_id")
     mr_iid = data.get("mr_iid")
-    
-    if not project_id or not mr_iid:
-        return jsonify({"error": "Missing project_id or mr_iid"}), 400
-    
-    try:
-        project_id = int(project_id)
-        mr_iid = int(mr_iid)
-    except (ValueError, TypeError):
-        return jsonify({"error": "project_id and mr_iid must be integers"}), 400
     
     try:
         result = webhook_handler.process_mr_review(project_id, mr_iid)
         return jsonify(result)
     except Exception as e:
+        capture_exception()
+        logger.error(f"Review error: {e}")
         return jsonify({"error": f"Review failed: {str(e)}"}), 500
 
 
