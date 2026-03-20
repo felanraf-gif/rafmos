@@ -358,6 +358,33 @@ def api_status():
     })
 
 
+@app.route("/api/insights", methods=["GET"])
+def api_insights():
+    from gitmind.insights import get_insights_engine
+    recent = feedback_storage.get_recent(100)
+    engine = get_insights_engine()
+    insights = engine.get_all_insights(recent)
+    return jsonify(insights)
+
+
+@app.route("/api/insights/patterns", methods=["GET"])
+def api_insights_patterns():
+    from gitmind.insights import get_insights_engine
+    recent = feedback_storage.get_recent(100)
+    engine = get_insights_engine()
+    patterns = engine.get_patterns(recent)
+    return jsonify({"patterns": patterns})
+
+
+@app.route("/api/insights/recommendations", methods=["GET"])
+def api_insights_recommendations():
+    from gitmind.insights import get_insights_engine
+    recent = feedback_storage.get_recent(100)
+    engine = get_insights_engine()
+    recommendations = engine.get_recommendations(recent)
+    return jsonify({"recommendations": recommendations})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     debug = os.environ.get("DEBUG", "false").lower() == "true"
