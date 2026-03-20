@@ -346,6 +346,7 @@ def api_uptime():
 
 @app.route("/api/status", methods=["GET"])
 def api_status():
+    from gitmind.uptime import uptime_monitor
     uptime_status = uptime_monitor.get_status(hours=24)
     return jsonify({
         "service": "GitMind",
