@@ -1,0 +1,12 @@
+{
+  "test": {
+    "value": "hello world",
+    "metadata": {},
+    "timestamp": "2026-03-19T21:40:19.177140"
+  },
+  "test_key": {
+    "value": "testowa warto\u015b\u0107",
+    "metadata": {},
+    "timestamp": "2026-03-19T22:24:32.123752"
+  }
+}

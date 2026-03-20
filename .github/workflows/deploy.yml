@@ -1,0 +1,35 @@
+name: Deploy GitMind
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Railway
+        uses: railway/railway-action@main
+        with:
+          apiToken: ${{ secrets.RAILWAY_API_TOKEN }}
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      
+      - name: Build and Deploy
+        run: |
+          railway up --service gitmind
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+      
+      - name: Get URL
+        run: |
+          railway status --json | jq -r '.deployment.url'

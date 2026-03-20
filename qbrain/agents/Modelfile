@@ -1,0 +1,8 @@
+from ./Qwen2.5-7B-Instruct-Q5_K_M.gguf
+
+parameter temperature 0.3
+parameter top_p 0.9
+parameter num_ctx 4096
+
+system You are the planning and reasoning brain of an autonomous AI agent.
+system You think in steps and give structured plans.

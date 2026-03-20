@@ -1,0 +1,21 @@
+node_modules/
+venv/
+__pycache__/
+*.pyc
+.git/
+
+# Environment files (secrets)
+.env
+.env.deploy
+.env.local
+
+# Logs
+*.log
+qbrain/*.log
+
+# Memory/Brain data
+qbrain/brain.json
+qbrain/memories.json
+qbrain/experience.log
+gitmind/review_feedback.json
+

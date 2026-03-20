@@ -1,0 +1,36 @@
+{
+  "project_name": "GitMind",
+  "version": "0.2.0",
+  "created": "2026-03-19",
+  "description": "AI Code Review Assistant for GitLab",
+  "features": {
+    "core": ["Webhook handler", "MR Review", "LLM Integration"],
+    "learning": ["Feedback storage", "Learning engine", "Adaptive prompts"],
+    "tools": ["Web Search", "Calculator", "Memory"]
+  },
+  "integrations": {
+    "gitlab": {
+      "connected": true,
+      "project_id": 80272702,
+      "project_name": "rafmos"
+    },
+    "llm": {
+      "provider": "groq",
+      "model": "llama-3.3-70b-versatile"
+    },
+    "search": {
+      "provider": "exa"
+    }
+  },
+  "stats": {
+    "total_reviews": 1,
+    "accuracy": 1.0,
+    "feedback_collected": 1
+  },
+  "metrics": {
+    "security": {"accuracy": 1.0, "total": 1},
+    "bug": {"accuracy": 0, "total": 0},
+    "quality": {"accuracy": 0, "total": 0},
+    "performance": {"accuracy": 0, "total": 0}
+  }
+}
