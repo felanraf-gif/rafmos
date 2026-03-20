@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitMind Self-hosted - AI Code Review</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .logo span {
+            color: #6366f1;
+        }
+        
+        nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: #fff;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .price-tag {
+            font-size: 48px;
+            font-weight: bold;
+            color: #6366f1;
+            margin: 40px 0;
+        }
+        
+        .price-tag span {
+            font-size: 20px;
+            color: #94a3b8;
+            font-weight: normal;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 60px 20px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #6366f1;
+        }
+        
+        .feature-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            padding: 60px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .demo-section h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        
+        .code-preview {
+            background: #0d0d1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            max-width: 800px;
+            margin: 20px auto;
+            overflow-x: auto;
+        }
+        
+        .comment {
+            color: #6b7280;
+        }
+        
+        .severity-critical {
+            color: #ef4444;
+        }
+        
+        .severity-high {
+            color: #f97316;
+        }
+        
+        .severity-medium {
+            color: #eab308;
+        }
+        
+        .pricing {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 900px;
+            margin: 40px auto;
+        }
+        
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card.featured {
+            border-color: #6366f1;
+            transform: scale(1.05);
+        }
+        
+        .pricing-card h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-card .price {
+            font-size: 48px;
+            font-weight: bold;
+            color: #6366f1;
+            margin: 20px 0;
+        }
+        
+        .pricing-card .price span {
+            font-size: 16px;
+            color: #94a3b8;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .pricing-features li {
+            padding: 10px 0;
+            color: #94a3b8;
+        }
+        
+        .pricing-features li::before {
+            content: "✓";
+            color: #6366f1;
+            margin-right: 10px;
+        }
+        
+        .faq {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+        
+        .faq h2 {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 40px;
+        }
+        
+        .faq-item {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .faq-item h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .faq-item p {
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 60px;
+        }
+        
+        footer p {
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .price-tag {
+                font-size: 36px;
+            }
+            
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Git<span>Mind</span></div>
+            <nav>
+                <a href="#features">Funkcje</a>
+                <a href="#demo">Demo</a>
+                <a href="#pricing">Cena</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+        </header>
+        
+        <section class="hero">
+            <h1>AI Code Review<br>na Twoim serwerze</h1>
+            <p>GitMind automatycznie analizuje Merge Requesty i wykrywa bugi, problemy bezpieczeństwa i błędy jakości. Pełna kontrola - żadnych external dependencies.</p>
+            
+            <div class="price-tag">
+                $29 <span>/ jednorazowo</span>
+            </div>
+            
+            <div class="cta-buttons">
+                <a href="https://gumroad.com/l/gitmind" class="btn btn-primary">🛒 Kup teraz - $29</a>
+                <a href="https://felanraf-gif-project.onrender.com" class="btn btn-secondary">Zobacz demo</a>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 14px; color: #6b7280;">
+                3 miesiące aktualizacji w cenie • License key • Dokumentacja
+            </p>
+        </section>
+        
+        <section class="features" id="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Security Scanning</h3>
+                <p>Automatycznie wykrywa hardcoded secrets, API keys, tokens i hasła w kodzie. Sekrety są natychmiast ukrywane w komentarzach.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🐛</div>
+                <h3>Bug Detection</h3>
+                <p>Znajduje logiczne błędy, potential NPE, nieobsługiwane edge cases i problemy z concurrency.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Szybki Feedback</h3>
+                <p>Review gotowy w mniej niż 2 minuty. Automatyczne komentarze w MR z emoji i statystykami.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Feedback Loop</h3>
+                <p>Agent uczy się z Twoich akceptacji i odrzuceń. Z czasem staje się coraz lepszy w ocenie kodu.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Łatwa instalacja</h3>
+                <p>Docker configuration w cenie. Wdrożenie na Render/VPS w 15 minut. Pełna dokumentacja krok po kroku.</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Insights Dashboard</h3>
+                <p>Statystyki accuracy, najczęstsze typy problemów, rekomendacje. Wszystko w jednym miejscu.</p>
+            </div>
+        </section>
+        
+        <section class="demo-section" id="demo">
+            <h2>Jak to działa?</h2>
+            <p style="color: #94a3b8; margin-bottom: 30px;">Otwórz MR → GitMind analizuje → Komentarz pojawia się automatycznie</p>
+            
+            <div class="code-preview">
+<span class="comment"># GitMind AI Code Review</span>
+
+## 🧠 AI Code Review
+
+### 📋 Znalezione problemy
+
+🔴 <span class="severity-critical">CRITICAL</span>
+**Problem:** Hardcoded API key
+**Plik:** api.py, linia 15
+**Fix:** Użyj zmiennej środowiskowej
+
+🟠 <span class="severity-high">HIGH</span>  
+**Problem:** Potential SQL Injection
+**Plik:** users.py, linia 42
+**Fix:** Użyj parameterized queries
+
+🟡 <span class="severity-medium">MEDIUM</span>
+**Problem:** Brak error handling
+**Plik:** main.py, linia 78
+
+---
+
+📊 Statystyki: 3 problemy
+🔴 Critical: 1 | 🟠 High: 1
+
+---
+*Wystawione przez GitMind AI*
+            </div>
+            
+            <p style="color: #6b7280; margin-top: 20px;">
+                Komentarze w GitLab z kolorowym formatowaniem i emoji
+            </p>
+        </section>
+        
+        <section class="pricing" id="pricing">
+            <h2>Prosty model cenowy</h2>
+            <p style="color: #94a3b8;">Jedna cena, zero ukrytych opłat</p>
+            
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Self-hosted</h3>
+                    <div class="price">$29</div>
+                    <p style="color: #94a3b8;">jednorazowo</p>
+                    <ul class="pricing-features">
+                        <li>Pełny kod źródłowy</li>
+                        <li>Docker configuration</li>
+                        <li>Dokumentacja instalacji</li>
+                        <li>3 miesiące aktualizacji</li>
+                        <li>License key</li>
+                    </ul>
+                    <a href="https://gumroad.com/l/gitmind" class="btn btn-primary" style="width: 100%;">Kup teraz</a>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div style="background: #6366f1; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 12px; display: inline-block; margin-bottom: 10px;">POPULARNE</div>
+                    <h3>Z wsparciem</h3>
+                    <div class="price">$49</div>
+                    <p style="color: #94a3b8;">jednorazowo</p>
+                    <ul class="pricing-features">
+                        <li>Wszystko z Self-hosted</li>
+                        <li>Priorytetowy email support</li>
+                        <li>6 miesięcy aktualizacji</li>
+                        <li>Setup assistance (1h)</li>
+                        <li>Custom webhook integration</li>
+                    </ul>
+                    <a href="https://gumroad.com/l/gitmind-pro" class="btn btn-primary" style="width: 100%;">Kup teraz</a>
+                </div>
+            </div>
+            
+            <p style="color: #6b7280; margin-top: 30px;">
+                Potrzebujesz więcej? <a href="mailto:felanraf@gmail.com" style="color: #6366f1;">Skontaktuj się</a> po indywidualną ofertę.
+            </p>
+        </section>
+        
+        <section class="faq" id="faq">
+            <h2>Częste pytania</h2>
+            
+            <div class="faq-item">
+                <h4>Co dokładnie dostaję po zakupie?</h4>
+                <p>Dostajesz link do pobrania kodu źródłowego GitMind (ZIP), dokumentację instalacji, przykładową konfigurację i license key ważny przez 1 rok.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Czy mogę używać na wielu projektach?</h4>
+                <p>License key jest ważny dla 1 projektu GitLab. Potrzebujesz więcej? Napisz do mnie po indywidualną ofertę.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Jak długo ważna jest licencja?</h4>
+                <p>Licencja ważna 1 rok od zakupu. Odnowienie kosztuje $9/rok i zawiera dostęp do wszystkich aktualizacji.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Jakie są wymagania techniczne?</h4>
+                <p>Python 3.11+, Docker (opcjonalnie), konto GitLab z Personal Access Token, konto Groq API (darmowe na api.groq.com).</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Czy jest gwarancja zwrotu?</h4>
+                <p>Tak! Jeśli produkt nie działa zgodnie z opisem, zwrócę pieniądze w ciągu 30 dni. Po prostu napisz na felanraf@gmail.com</p>
+            </div>
+            
+            <div class="faq-item">
+                <h4>Czy oferujesz wsparcie?</h4>
+                <p>W wersji podstawowej - dokumentacja i community support. W wersji Pro - priorytetowy email i assistance przy setupie.</p>
+            </div>
+        </section>
+        
+        <footer>
+            <p>GitMind © 2024 • <a href="https://github.com/felanraf-gif/rafmos" style="color: #6366f1;">GitHub</a> • <a href="mailto:felanraf@gmail.com" style="color: #6366f1;">Kontakt</a></p>
+        </footer>
+    </div>
+</body>
+</html>
